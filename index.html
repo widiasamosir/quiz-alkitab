@@ -25,6 +25,12 @@
         #hint-text { display: none; margin-top: 10px; padding: 10px; background: #fff3e0; border-left: 4px solid #f39c12; color: #e65100; font-size: 0.9em; border-radius: 4px; }
 
         #info-box { display: none; margin-top: 20px; padding: 15px; background: #e1f5fe; border-left: 5px solid #03a9f4; border-radius: 5px; color: #01579b; font-style: italic; animation: fadeIn 0.5s; }
+
+        /* PIN Section Styles */
+        #pin-container { display: none; margin-top: 20px; padding: 15px; border: 2px dashed #3498db; border-radius: 10px; text-align: center; background: #f0f7ff; }
+        #pin-input { padding: 10px; width: 100px; font-size: 18px; text-align: center; border: 2px solid #3498db; border-radius: 5px; margin-bottom: 10px; }
+        #pin-btn { padding: 10px 20px; background: #3498db; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+
         #next-btn { display: none; margin-top: 20px; width: 100%; padding: 15px; background: #2980b9; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 17px; font-weight: bold; }
 
         #result { display: none; text-align: center; padding: 40px 10px; }
@@ -50,7 +56,16 @@
         <h1 id="title">Retreat GPdI Maranatha - Kuis Bible Reading</h1>
         <div class="question" id="question-text"></div>
         <div id="options-container"></div>
+
         <div id="info-box"></div>
+
+        <div id="pin-container">
+            <p style="margin-top:0; font-weight:bold; color:#2980b9;">Sesi kuis akan segera dimulai!<br>Masukkan PIN Panitia untuk lanjut:</p>
+            <input type="password" id="pin-input" placeholder="****">
+            <br>
+            <button id="pin-btn" onclick="verifyPin()">BUKA KUIS</button>
+        </div>
+
         <button id="next-btn" onclick="nextQuestion()">Pertanyaan Selanjutnya →</button>
     </div>
 
@@ -63,7 +78,8 @@
 </div>
 
 <script>
-    // Data 50 Pertanyaan (Sama seperti sebelumnya)
+    const MASTER_PIN = "1234"; // Ganti PIN di sini sesuai keinginan
+
     const quizData = [
         { q: "Apa tema retreat hari ini?", options: ["Be Zeal, Be Real", "Transforming with Zeal", "Transformed By God", "Berani Melangkah"], correct: 2, hint: "Lihat di kertas retreat", info: "Ini cuma contoh aja. HEHE...Semangat untuk kuisnya!!!!" },
         { q: "Bagaimana Elia terangkat ke sorga?", options: ["Bersama-sama dengan Elisha", "Angin badai & kereta berapi", "Diambil oleh malaikat Gabriel", "Ditelan bumi"], correct: 1, hint: "Melibatkan kendaraan yang sangat terang dan angin dahsyat.", info: "2 Raja-raja 2:11 - Kereta berapi memisahkan keduanya dan Elia naik dalam angin badai." },
@@ -118,16 +134,19 @@
         { q: "Siapa raja Yehuda yang dilepaskan dari penjara di Babel?", options: ["Zedekia", "Yoyakhin", "Yosia", "Manasye"], correct: 1, hint: "Keponakan Zedekia yang sempat memerintah 3 bulan.", info: "2 Raja-raja 25:27 - Raja Babel melepaskan Yoyakhin dari penjara." }
     ];
 
+    // Karena data soal di prompt terpotong, pastikan Anda menggunakan list 50 soal lengkap milik Anda di sini.
+
     let currentIdx = 0;
     const questionEl = document.getElementById("question-text");
     const optionsEl = document.getElementById("options-container");
     const infoBox = document.getElementById("info-box");
     const nextBtn = document.getElementById("next-btn");
+    const pinContainer = document.getElementById("pin-container");
+    const pinInput = document.getElementById("pin-input");
     const progressEl = document.getElementById("progress-text");
     const hintTextEl = document.getElementById("hint-text");
     const qSelect = document.getElementById("q-select");
 
-    // Initialize Dropdown
     function initSelector() {
         for (let i = 0; i < quizData.length; i++) {
             let opt = document.createElement("option");
@@ -146,9 +165,8 @@
         nextBtn.style.display = "none";
         infoBox.style.display = "none";
         hintTextEl.style.display = "none";
+        pinContainer.style.display = "none";
         optionsEl.innerHTML = "";
-
-        // Sync Dropdown
         qSelect.value = currentIdx;
 
         const data = quizData[currentIdx];
@@ -172,7 +190,6 @@
 
     function checkAnswer(selected, btn) {
         if (btn.classList.contains("correct") || btn.classList.contains("wrong")) return;
-
         const correctIdx = quizData[currentIdx].correct;
 
         if (selected === correctIdx) {
@@ -180,11 +197,27 @@
             infoBox.innerHTML = "<b>Jawaban Benar! ✨</b><br><br>" + quizData[currentIdx].info;
             infoBox.style.display = "block";
             hintTextEl.style.display = "none";
-
             document.querySelectorAll(".option").forEach(b => b.classList.add("disabled"));
-            nextBtn.style.display = "block";
+
+            // JIKA SOAL NOMOR 1 (INDEX 0), TAMPILKAN PIN
+            if (currentIdx === 0) {
+                pinContainer.style.display = "block";
+            } else {
+                nextBtn.style.display = "block";
+            }
         } else {
             btn.classList.add("wrong");
+        }
+    }
+
+    function verifyPin() {
+        if (pinInput.value === MASTER_PIN) {
+            pinContainer.style.display = "none";
+            nextBtn.style.display = "block";
+            pinInput.value = "";
+        } else {
+            alert("PIN Salah! Tanya panitia ya.");
+            pinInput.value = "";
         }
     }
 
