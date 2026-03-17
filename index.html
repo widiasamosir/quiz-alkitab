@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Master Kuis 2 Raja-raja - GPdI Maranatha</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #eef2f3; display: flex; justify-content: center; padding: 20px; }
+        #quiz-container { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); max-width: 700px; width: 100%; }
+        h1 { color: #2c3e50; text-align: center; border-bottom: 3px solid #3498db; padding-bottom: 10px; margin-top: 0; font-size: 1.5em; }
+
+        .nav-header { background: #f8f9fa; padding: 10px; border-radius: 8px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #dee2e6; }
+        .selector-container { display: flex; align-items: center; gap: 10px; }
+        select { padding: 5px; border-radius: 4px; border: 1px solid #3498db; cursor: pointer; }
+
+        .progress-info { color: #7f8c8d; font-weight: bold; font-size: 0.9em; margin-bottom: 30px; margin-top: 30px; }
+        .question { font-size: 1.25em; margin-bottom: 20px; color: #34495e; line-height: 1.5; font-weight: 600; }
+        .option { display: block; width: 100%; padding: 15px; margin: 8px 0; border: 2px solid #ecf0f1; border-radius: 10px; cursor: pointer; background: #fff; font-size: 16px; transition: 0.2s; text-align: left; }
+        .option:hover:not(.disabled) { background: #f1faff; border-color: #3498db; }
+        .wrong { background-color: #ff7675 !important; border-color: #d63031 !important; color: white; }
+        .correct { background-color: #55efc4 !important; border-color: #00b894 !important; color: #2d3436; font-weight: bold; }
+        .disabled { cursor: default; }
+
+        #hint-btn { background: #f39c12; color: white; border: none; padding: 6px 12px; border-radius: 5px; cursor: pointer; font-size: 0.8em; font-weight: bold; }
+        #hint-text { display: none; margin-top: 10px; padding: 10px; background: #fff3e0; border-left: 4px solid #f39c12; color: #e65100; font-size: 0.9em; border-radius: 4px; }
+
+        #info-box { display: none; margin-top: 20px; padding: 15px; background: #e1f5fe; border-left: 5px solid #03a9f4; border-radius: 5px; color: #01579b; font-style: italic; animation: fadeIn 0.5s; }
+        #next-btn { display: none; margin-top: 20px; width: 100%; padding: 15px; background: #2980b9; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 17px; font-weight: bold; }
+
+        #result { display: none; text-align: center; padding: 40px 10px; }
+        .blessing { font-size: 24px; color: #2c3e50; margin-bottom: 20px; font-weight: bold; }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    </style>
+</head>
+<body>
+
+<div id="quiz-container">
+    <div id="quiz-content">
+        <div class="nav-header">
+            <div class="selector-container">
+                <label for="q-select" style="font-size: 0.8em; font-weight: bold; color: #34495e;">PILIH SOAL:</label>
+                <select id="q-select" onchange="jumpToQuestion(this.value)"></select>
+            </div>
+            <button id="hint-btn" onclick="toggleHint()">💡 PETUNJUK</button>
+        </div>
+
+        <div id="hint-text"></div>
+        <div class="progress-info" id="progress-text"></div>
+        <h1 id="title">Retreat GPdI Maranatha - Kuis Bible Reading</h1>
+        <div class="question" id="question-text"></div>
+        <div id="options-container"></div>
+        <div id="info-box"></div>
+        <button id="next-btn" onclick="nextQuestion()">Pertanyaan Selanjutnya →</button>
+    </div>
+
+    <div id="result">
+        <h1>Sesi Kuis Selesai!</h1>
+        <div class="blessing">Tuhan Yesus Memberkati </div>
+        <p>Terima kasih telah bible reading. HEHEE.</p>
+        <button onclick="location.reload()" style="padding:12px 25px; background:#3498db; color:white; border:none; border-radius:8px; cursor:pointer; margin-top: 20px;">Ulangi Dari Awal</button>
+    </div>
+</div>
+
+<script>
+    // Data 50 Pertanyaan (Sama seperti sebelumnya)
+    const quizData = [
+        { q: "Apa tema retreat hari ini?", options: ["Be Zeal, Be Real", "Transforming with Zeal", "Transformed By God", "Berani Melangkah"], correct: 2, hint: "Lihat di kertas retreat", info: "Ini cuma contoh aja. HEHE...Semangat untuk kuisnya!!!!" },
+        { q: "Bagaimana Elia terangkat ke sorga?", options: ["Bersama-sama dengan Elisha", "Angin badai & kereta berapi", "Diambil oleh malaikat Gabriel", "Ditelan bumi"], correct: 1, hint: "Melibatkan kendaraan yang sangat terang dan angin dahsyat.", info: "2 Raja-raja 2:11 - Kereta berapi memisahkan keduanya dan Elia naik dalam angin badai." },
+        { q: "Siapa nabi pengganti Elia?", options: ["Yesaya", "Yeremia", "Elisa", "Hosea"], correct: 2, hint: "Namanya sangat mirip dengan nabi sebelumnya.", info: "2 Raja-raja 2:15 - Roh Elia telah hinggap pada Elisa." },
+        { q: "Apa yang diminta Elisa dari Elia sebelum terangkat?", options: ["Emas", "Dua bagian dari rohnya", "Jubah baru", "Umur panjang"], correct: 1, hint: "Ia meminta warisan rohani yang berlipat ganda.", info: "2 Raja-raja 2:9 - Elisa meminta hak kesulungan spiritual." },
+        { q: "Sungai apa yang dibelah Elisa dengan jubah Elia?", options: ["Nil", "Yordan", "Efrat", "Tigris"], correct: 1, hint: "Sungai utama di tanah Kanaan.", info: "2 Raja-raja 2:14 - Air itu terbelah ke sebelah sini dan ke sebelah sana." },
+        { q: "Apa yang dilemparkan Elisa ke air Yerikho yang buruk?", options: ["Tepung", "Garam", "Madu", "Kayu"], correct: 1, hint: "Bumbu dapur yang juga simbol penyucian.", info: "2 Raja-raja 2:21 - Elisa menyehatkan air itu dengan garam." },
+        { q: "Berapa anak yang dicabik beruang karena mengejek Elisa?", options: ["12", "24", "42", "50"], correct: 2, hint: "Angka ini juga muncul dalam jumlah bulan di masa penganiayaan kitab Wahyu.", info: "2 Raja-raja 2:24 - Dua ekor beruang mencabik 42 orang anak." },
+        { q: "Siapa raja Moab yang memberontak terhadap Israel?", options: ["Mesa", "Eglon", "Balak", "Hadad"], correct: 0, hint: "Namanya mirip dengan meja.", info: "2 Raja-raja 3:4-5 - Raja Mesa memberontak setelah Ahab mati." },
+        { q: "Apa yang keluar dari tanah untuk memberi minum tentara Israel di gurun?", options: ["Mata air", "Hujan deras", "Air tanpa angin/hujan", "Embun"], correct: 2, hint: "Tuhan membuat mujizat tanpa fenomena alam biasa.", info: "2 Raja-raja 3:17 - Lembah itu penuh air tanpa ada angin atau hujan." },
+        { q: "Apa yang dilipatgandakan Elisa untuk janda yang miskin?", options: ["Roti", "Minyak", "Gandum", "Anggur"], correct: 1, hint: "Cairan ini digunakan untuk lampu dan memasak.", info: "2 Raja-raja 4:6 - Minyak itu berhenti mengalir setelah bejana penuh." },
+        { q: "Di kota mana Elisa membangkitkan anak perempuan kaya?", options: ["Yerikho", "Sunem", "Betel", "Samaria"], correct: 1, hint: "Namanya berawalan 'S'.", info: "2 Raja-raja 4:8 - Perempuan Sunem itu mengundang Elisa makan." },
+        { q: "Apa yang ditaruh Elisa ke kuali yang berisi racun?", options: ["Garam", "Tepung", "Gula", "Minyak"], correct: 1, hint: "Bahan pembuat roti.", info: "2 Raja-raja 4:41 - Tepung menetralkan racun dalam kuali." },
+        { q: "Berapa orang yang diberi makan Elisa dengan 20 roti jelai?", options: ["50", "100", "500", "5000"], correct: 1, hint: "Angka genap ratusan.", info: "2 Raja-raja 4:42-44 - 100 orang makan dan ada sisanya." },
+        { q: "Siapa panglima Aram yang menderita kusta?", options: ["Benhadad", "Hazael", "Naaman", "Rezin"], correct: 2, hint: "Namanya berawalan 'N'.", info: "2 Raja-raja 5:1 - Naaman adalah pahlawan tentara raja Aram." },
+        { q: "Di sungai mana Naaman mandi 7 kali?", options: ["Abana", "Parpar", "Yordan", "Khison"], correct: 2, hint: "Tempat yang sama di mana Yohanes Pembaptis melayani.", info: "2 Raja-raja 5:14 - Ia membenamkan diri 7 kali di sungai Yordan." },
+        { q: "Siapa pelayan Elisa yang kena kusta karena serakah?", options: ["Gihazi", "Barukh", "Yosua", "Hamba anonim"], correct: 0, hint: "Namanya berawalan 'G'.", info: "2 Raja-raja 5:27 - Kusta Naaman akan melekat padamu." },
+        { q: "Apa yang dibuat Elisa mengapung di air?", options: ["Batu", "Kayu", "Mata kapak besi", "Kereta"], correct: 2, hint: "Benda berat yang biasanya tenggelam.", info: "2 Raja-raja 6:6 - Besi itu timbul ke permukaan." },
+        { q: "Tentara bangsa mana yang dibuat buta oleh Elisa?", options: ["Filistin", "Aram", "Moab", "Edom"], correct: 1, hint: "Bangsa yang beribu kota di Damsyik.", info: "2 Raja-raja 6:18 - Tuhan membuat mereka buta sesuai doa Elisa." },
+        { q: "Siapa raja Aram yang mengepung Samaria hingga kelaparan?", options: ["Hazael", "Benhadad", "Rezin", "Tiglat-Pileser"], correct: 1, hint: "Nama gelar raja Aram.", info: "2 Raja-raja 6:24 - Benhadad mengepung Samaria dengan hebat." },
+        { q: "Siapa yang menemukan kamp Aram kosong ditinggalkan?", options: ["Prajurit", "4 orang kusta", "Elisa", "Raja Joram"], correct: 1, hint: "Orang-orang yang dianggap najis secara hukum taurat.", info: "2 Raja-raja 7:3 - Ada empat orang kusta di depan pintu gerbang." },
+        { q: "Siapa yang diurapi menjadi raja Aram menggantikan Benhadad?", options: ["Hazael", "Yehu", "Atalya", "Pekah"], correct: 0, hint: "Dikatakan Elisa akan menjadi penguasa yang kejam bagi Israel.", info: "2 Raja-raja 8:15 - Hazael membekap raja dengan selimut basah." },
+        { q: "Siapa raja Israel yang dibunuh oleh Yehu?", options: ["Ahab", "Yoram", "Ahazia", "Yoas"], correct: 1, hint: "Anak Ahab.", info: "2 Raja-raja 9:24 - Yehu memanah Yoram hingga mati." },
+        { q: "Bagaimana cara Izebel mati?", options: ["Sakit", "Dilempar dari jendela", "Diracun", "Dipenggal"], correct: 1, hint: "Kejadian tragis di istana Yizreel.", info: "2 Raja-raja 9:33 - Yehu memerintahkannya dilempar ke bawah." },
+        { q: "Siapa yang memunahkan seluruh keluarga Ahab?", options: ["Yehu", "Elisa", "Hazael", "Hizkia"], correct: 0, hint: "Terkenal sebagai pengendara kereta kuda yang sangat cepat.", info: "2 Raja-raja 10:11 - Yehu membunuh semua orang yang tersisa." },
+        { q: "Apa yang dihancurkan Yehu di Samaria?", options: ["Bait Allah", "Kuil Baal", "Istana Gading", "Tembok Kota"], correct: 1, hint: "Tempat penyembahan dewa asing.", info: "2 Raja-raja 10:27 - Mereka merobohkan tugu berhala Baal." },
+        { q: "Siapa ratu yang membunuh keturunan raja Yehuda?", options: ["Izebel", "Atalya", "Esther", "Wasti"], correct: 1, hint: "Putri dari Izebel.", info: "2 Raja-raja 11:1 - Atalya membinasakan semua keturunan raja." },
+        { q: "Siapa pangeran kecil yang diselamatkan dari Atalya?", options: ["Yoas", "Yosia", "Hizkia", "Manasye"], correct: 0, hint: "Disembunyikan di Bait Allah oleh imam Yoyada.", info: "2 Raja-raja 11:2 - Yoseba menyembunyikan Yoas." },
+        { q: "Berapa umur Yoas saat menjadi raja?", options: ["7 tahun", "8 tahun", "12 tahun", "16 tahun"], correct: 0, hint: "Angka di bawah sepuluh.", info: "2 Raja-raja 11:21 - Yoas berumur tujuh tahun waktu ia naik raja." },
+        { q: "Apa fokus utama perbaikan yang dilakukan raja Yoas?", options: ["Tembok kota", "Bait Allah", "Pasar", "Pelabuhan"], correct: 1, hint: "Tempat ibadah bangsa Israel.", info: "2 Raja-raja 12:5 - Para imam harus memperbaiki kerusakan rumah itu." },
+        { q: "Siapa nabi yang meninggal di masa pemerintahan Yoas (Israel)?", options: ["Elia", "Elisa", "Amos", "Hosea"], correct: 1, hint: "Penerus Elia.", info: "2 Raja-raja 13:14 - Elisa jatuh sakit dan meninggal." },
+        { q: "Apa yang terjadi saat mayat menyentuh tulang Elisa?", options: ["Hancur", "Hidup kembali", "Menjadi emas", "Berbau harum"], correct: 1, hint: "Mujizat kehidupan yang sangat langka.", info: "2 Raja-raja 13:21 - Orang itu hidup kembali dan berdiri." },
+        { q: "Siapa raja Yehuda yang kena kusta karena sombong?", options: ["Uzia (Azarya)", "Yotam", "Ahas", "Manasye"], correct: 0, hint: "Juga dikenal sebagai Azarya.", info: "2 Raja-raja 15:5 - Tuhan menulahi raja itu dengan kusta." },
+        { q: "Raja Israel mana yang membawa Israel ke pembuangan Asyur?", options: ["Pekah", "Hosea", "Menahem", "Yerobeam II"], correct: 1, hint: "Namanya sama dengan nabi yang menikahi Gomer.", info: "2 Raja-raja 17:6 - Raja Asyur mengangkut orang Israel ke Asyur." },
+        { q: "Bangsa mana yang menaklukkan Samaria tahun 722 SM?", options: ["Babel", "Mesir", "Asyur", "Persia"], correct: 2, hint: "Beribu kota di Niniwe.", info: "2 Raja-raja 17:6 - Karena mereka tidak mendengarkan suara Tuhan." },
+        { q: "Siapa raja Yehuda yang paling saleh dan percaya Tuhan?", options: ["Ahas", "Hizkia", "Manasye", "Amon"], correct: 1, hint: "Berdoa meminta perpanjangan umur.", info: "2 Raja-raja 18:5 - Ia percaya kepada Tuhan, Allah Israel." },
+        { q: "Apa nama benda tembaga buatan Musa yang dihancurkan Hizkia?", options: ["Mezbah", "Nehustan", "Bejana", "Tabut"], correct: 1, hint: "Berbentuk ular tembaga.", info: "2 Raja-raja 18:4 - Hizkia menghancurkan ular tembaga itu." },
+        { q: "Siapa raja Asyur yang mengepung Yerusalem?", options: ["Sargon", "Sennakerib", "Esarhadon", "Pul"], correct: 1, hint: "Namanya berawalan 'S'.", info: "2 Raja-raja 18:13 - Sennakerib menyerang kota-kota Yehuda." },
+        { q: "Siapa nabi yang mendampingi raja Hizkia?", options: ["Yeremia", "Yesaya", "Mikha", "Zefanya"], correct: 1, hint: "Menulis kitab nabi besar yang sangat panjang.", info: "2 Raja-raja 19:2 - Mereka pergi kepada nabi Yesaya bin Amos." },
+        { q: "Berapa tentara Asyur yang dibunuh Malaikat dalam semalam?", options: ["100.000", "185.000", "50.000", "120.000"], correct: 1, hint: "Lebih dari 150 ribu.", info: "2 Raja-raja 19:35 - Malaikat Tuhan membunuh 185.000 orang." },
+        { q: "Berapa tahun tambahan umur Hizkia setelah berdoa?", options: ["5 tahun", "10 tahun", "15 tahun", "20 tahun"], correct: 2, hint: "Satu setengah dekade.", info: "2 Raja-raja 20:6 - Aku akan menambah umurmu lima belas tahun lagi." },
+        { q: "Apa tanda matahari mundur yang diberikan kepada Hizkia?", options: ["5 derajat", "10 derajat", "12 derajat", "15 derajat"], correct: 1, hint: "Angka sepuluh.", info: "2 Raja-raja 20:11 - Bayang-bayang itu mundur sepuluh derajat." },
+        { q: "Siapakah putra Hizkia yang sangat jahat?", options: ["Amon", "Manasye", "Yosia", "Yoahas"], correct: 1, hint: "Memerintah paling lama di Yehuda.", info: "2 Raja-raja 21:1 - Manasye melakukan apa yang jahat di mata Tuhan." },
+        { q: "Berapa lama Manasye memerintah (paling lama)?", options: ["40 tahun", "55 tahun", "50 tahun", "60 tahun"], correct: 1, hint: "Lima puluh..." , info: "2 Raja-raja 21:1 - Ia memerintah lima puluh lima tahun lama di Yerusalem." },
+        { q: "Siapa raja yang naik takhta pada usia 8 tahun?", options: ["Yoas", "Yosia", "Manasye", "Zedekia"], correct: 1, hint: "Melakukan reformasi setelah menemukan Taurat.", info: "2 Raja-raja 22:1 - Yosia berumur delapan tahun waktu naik raja." },
+        { q: "Apa yang ditemukan di Bait Allah pada zaman Yosia?", options: ["Emas", "Kitab Taurat", "Ular tembaga", "Pedang Daud"], correct: 1, hint: "Berisi firman Tuhan melalui Musa.", info: "2 Raja-raja 22:8 - Imam Hilkia menemukan kitab Taurat." },
+        { q: "Siapa nabiah yang dimintai petunjuk oleh Yosia?", options: ["Debora", "Hulda", "Miriam", "Anna"], correct: 1, hint: "Namanya berawalan 'H'.", info: "2 Raja-raja 22:14 - Mereka pergi kepada nabiah Hulda." },
+        { q: "Di mana raja Yosia tewas dalam pertempuran?", options: ["Megido", "Yerikho", "Yerusalem", "Gaza"], correct: 0, hint: "Tempat yang sering dikaitkan dengan pertempuran akhir zaman.", info: "2 Raja-raja 23:29 - Firaun Nekho membunuh Yosia di Megido." },
+        { q: "Siapa raja Babel yang menaklukkan Yehuda?", options: ["Koresh", "Nebukadnezar", "Belsyazar", "Darius"], correct: 1, hint: "Raja yang juga muncul di kisah nabi Daniel.", info: "2 Raja-raja 24:1 - Nebukadnezar menyerang Yoyakim." },
+        { q: "Siapa raja Yehuda terakhir sebelum pembuangan?", options: ["Yoyakhin", "Zedekia", "Yoyakim", "Yoahas"], correct: 1, hint: "Namanya berawalan 'Z'.", info: "2 Raja-raja 24:18 - Nama raja terakhir adalah Zedekia." },
+        { q: "Apa yang terjadi pada Bait Allah di akhir kitab?", options: ["Dibangun kembali", "Dibakar & diruntuhkan", "Dibiarkan kosong", "Dijadikan istana"], correct: 1, hint: "Kehancuran total oleh tentara Babel.", info: "2 Raja-raja 25:9 - Ia membakar rumah Tuhan dan istana raja." },
+        { q: "Siapa raja Yehuda yang dilepaskan dari penjara di Babel?", options: ["Zedekia", "Yoyakhin", "Yosia", "Manasye"], correct: 1, hint: "Keponakan Zedekia yang sempat memerintah 3 bulan.", info: "2 Raja-raja 25:27 - Raja Babel melepaskan Yoyakhin dari penjara." }
+    ];
+
+    let currentIdx = 0;
+    const questionEl = document.getElementById("question-text");
+    const optionsEl = document.getElementById("options-container");
+    const infoBox = document.getElementById("info-box");
+    const nextBtn = document.getElementById("next-btn");
+    const progressEl = document.getElementById("progress-text");
+    const hintTextEl = document.getElementById("hint-text");
+    const qSelect = document.getElementById("q-select");
+
+    // Initialize Dropdown
+    function initSelector() {
+        for (let i = 0; i < quizData.length; i++) {
+            let opt = document.createElement("option");
+            opt.value = i;
+            opt.innerHTML = `Soal ${i + 1}`;
+            qSelect.appendChild(opt);
+        }
+    }
+
+    function jumpToQuestion(val) {
+        currentIdx = parseInt(val);
+        loadQuestion();
+    }
+
+    function loadQuestion() {
+        nextBtn.style.display = "none";
+        infoBox.style.display = "none";
+        hintTextEl.style.display = "none";
+        optionsEl.innerHTML = "";
+
+        // Sync Dropdown
+        qSelect.value = currentIdx;
+
+        const data = quizData[currentIdx];
+        progressEl.innerText = `SOAL ${currentIdx + 1} DARI ${quizData.length}`;
+        questionEl.innerText = data.q;
+
+        data.options.forEach((opt, i) => {
+            const btn = document.createElement("button");
+            btn.className = "option";
+            btn.innerText = opt;
+            btn.onclick = () => checkAnswer(i, btn);
+            optionsEl.appendChild(btn);
+        });
+    }
+
+    function toggleHint() {
+        const hint = quizData[currentIdx].hint;
+        hintTextEl.innerText = "💡 Petunjuk: " + hint;
+        hintTextEl.style.display = (hintTextEl.style.display === "none") ? "block" : "none";
+    }
+
+    function checkAnswer(selected, btn) {
+        if (btn.classList.contains("correct") || btn.classList.contains("wrong")) return;
+
+        const correctIdx = quizData[currentIdx].correct;
+
+        if (selected === correctIdx) {
+            btn.classList.add("correct");
+            infoBox.innerHTML = "<b>Jawaban Benar! ✨</b><br><br>" + quizData[currentIdx].info;
+            infoBox.style.display = "block";
+            hintTextEl.style.display = "none";
+
+            document.querySelectorAll(".option").forEach(b => b.classList.add("disabled"));
+            nextBtn.style.display = "block";
+        } else {
+            btn.classList.add("wrong");
+        }
+    }
+
+    function nextQuestion() {
+        currentIdx++;
+        if (currentIdx < quizData.length) {
+            loadQuestion();
+        } else {
+            showResult();
+        }
+    }
+
+    function showResult() {
+        document.getElementById("quiz-content").style.display = "none";
+        document.getElementById("result").style.display = "block";
+    }
+
+    initSelector();
+    loadQuestion();
+</script>
+
+</body>
+</html>
